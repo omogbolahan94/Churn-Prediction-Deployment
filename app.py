@@ -29,7 +29,7 @@ def predict():
     # Load the uploaded file
     if filename.endswith('.csv'):
         data = pd.read_csv(file)
-    elif filename.endswith('.xlsx'):
+    elif elif filename.endswith('.xlsx') or filename.endswith('.xls'):
         data = pd.read_excel(file)
     else:
         return "Invalid file format. Only CSV and Excel files are supported.", 400
