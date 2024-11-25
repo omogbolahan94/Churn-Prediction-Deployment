@@ -28,56 +28,59 @@ def predict():
 
     # Load the uploaded file
     if filename.endswith('.csv'):
-        data = pd.read_csv(file)
+        test_data = pd.read_csv(file)
     elif filename.endswith('.xlsx'): 
-        data = pd.read_excel(file, engine='openpyxl')
+        test_data = pd.read_excel(file, engine='openpyxl')
     elif filename.endswith('.xls'):
-        data = pd.read_excel(file, engine='xlrd')
+        test_data = pd.read_csv(file, sep='\t') #, engine='xlrd')
     else:
         return "Invalid file format. Only CSV and Excel files are supported.", 400
 
+    # Ensure all training-time columns are present
     required_columns = [
-        'customer_id', 'late_payments_last_year', 'missed_payments_last_year', 'plan_tenure',
+        'late_payments_last_year', 'missed_payments_last_year', 'plan_tenure',
         'num_employees', 'avg_monthly_contribution', 'annual_revenue',
         'support_calls_last_year', 'support_engagement_per_year',
         'major_issue_Technical Issue'
     ]
 
-    if not all(col in data.columns for col in required_columns):
-        return f"Missing required columns. Ensure your file contains: {', '.join(required_columns)}", 400
+    # Ensure 'major_issue' is one-hot encoded if needed
+    if 'major_issue_Technical Issue' in test_data.columns:
+        test_data = pd.get_dummies(test_data, columns=['major_issue_Technical Issue'], drop_first=True)
 
-    # Handle one-hot encoding for 'major_issue'
-    if 'major_issue' in data.columns:
-        data = pd.get_dummies(data, columns=['major_issue'], drop_first=True)
-
-    # Ensure all required columns are present
+    
     for col in required_columns:
-        if col not in data.columns:
-            data[col] = 0  
+        if col not in test_data.columns:
+            test_data[col] = 0  # Add missing columns with default value 0
 
-    # Extract features for prediction
-    data_features = data[required_columns]
+    customer_ids = test_data['customer_id']  
+    # # Extract features and customer IDs
+    test_data_features = test_data[required_columns]
 
-    # Make predictions
-    data['predicted_churn'] = model.predict(data_features)
+    # # Make predictions
+    test_data['predicted_churn'] = model.predict(test_data_features)
 
-    # Select the desired output columns
+    # # Select the desired output columns (excluding churn_probability)
     output_columns = [
         'customer_id', 'late_payments_last_year', 'missed_payments_last_year',
         'plan_tenure', 'num_employees', 'avg_monthly_contribution',
         'annual_revenue', 'support_calls_last_year', 'support_engagement_per_year',
         'major_issue_Technical Issue', 'predicted_churn'
     ]
+    output_data = test_data[output_columns]
 
-    output_data = data[output_columns]
+    # # Specify the file name
+    output_file = 'test_data_with_predictions_and_ids.csv'
 
-    # Save the output to a CSV file
-    output_file = os.path.join(os.getcwd(), 'test_data_with_predictions_and_ids.csv')
-    output_data.to_csv(output_file, index=False)
-    print(f"Predictions saved to {output_file}")
+    # # Select the desired output columns from the DataFrame
+    output_data = test_data[output_columns]
 
-    # Provide a download link
-    return send_file(output_file, as_attachment=True, download_name="predictions.csv")
+    # # Save the selected output to a CSV file
+    output_file_path = os.path.join(os.getcwd(), output_file)
+    output_data.to_csv(output_file_path, index=False)
+
+    # # Provide a download link for the saved CSV file
+    return send_file(output_file_path, as_attachment=True, download_name="predictions.csv")
 
 
 if __name__ == "__main__":
