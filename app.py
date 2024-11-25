@@ -45,7 +45,7 @@ def predict():
     ]
 
     # Ensure 'major_issue' is one-hot encoded if needed
-    if 'major_issue_Technical Issue' in test_data.columns:
+    if 'major_issue_Technical Issue' not in test_data.columns:
         test_data = pd.get_dummies(test_data, columns=['major_issue_Technical Issue'], drop_first=True)
 
     
