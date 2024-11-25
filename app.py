@@ -29,8 +29,10 @@ def predict():
     # Load the uploaded file
     if filename.endswith('.csv'):
         data = pd.read_csv(file)
-    elif filename.endswith('.xlsx') or filename.endswith('.xls'):
-        data = pd.read_excel(file)
+    elif filename.endswith('.xlsx'): 
+        data = pd.read_excel(file, engine='openpyxl')
+    elif filename.endswith('.xls'):
+        data = pd.read_excel(file, engine='xlrd')
     else:
         return "Invalid file format. Only CSV and Excel files are supported.", 400
 
