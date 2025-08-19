@@ -18,4 +18,7 @@ The file should have the following required features (columns) in this order:
 The app will generate a new file containing the input features along with a new column indicating whether a customer will churn or not.
 
 
+# Note: I did not build the model; it was provided by the owner for deployment.
+
+
 
